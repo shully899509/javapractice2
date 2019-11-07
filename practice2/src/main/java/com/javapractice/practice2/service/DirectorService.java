@@ -42,7 +42,7 @@ public class DirectorService {
     }
 
     public List<Movie> getMoviesByDirectorId(int directorId) {
-        return movieRepository.findMoviesByDirector_Id(directorId);
+        return movieRepository.findMoviesByDirectorId(directorId);
     }
 
     @Transactional
