@@ -62,6 +62,6 @@ Having the following tables:
 
 - [x] Implement the methods for retrieving the actors of a movie, the movies an actor plays in and the movies having a specific director in previous services 
 
-- [ ] Create REST endpoints for movies, actors and directors 
+- [x] Create REST endpoints for movies, actors and directors 
 
 - [ ] Try to include some design patterns in your code
