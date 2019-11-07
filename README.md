@@ -28,11 +28,11 @@ Having the following tables:
 
 - [x] Create entities/model classes 
 
-- [ ] Create repository classes with CRUD methods 
+- [x] Create repository classes with CRUD methods 
 
 - [x] Create service classes with CRUD methods 
 
-- [ ] Create tests for repository/service  
+- [x] Create tests for repository/service  
 
   
 
@@ -54,13 +54,13 @@ Having the following tables:
 
   
 
-- [ ] Add to current model classes Actor and Director and integrate them with the Person class. 
+- [x] Add to current model classes Actor and Director and integrate them with the Person class. 
 
-- [ ] Using one of the inheritance strategies, create tables and services for them. 
+- [x] Using one of the inheritance strategies, create tables and services for them. 
 
-- [ ] Using annotations such @OneToMany, @ManyToOne, model a relationship between movies and actors where a movie can have multiple actors and actors can play in multiple movies. 
+- [x] Using annotations such @OneToMany, @ManyToOne, model a relationship between movies and actors where a movie can have multiple actors and actors can play in multiple movies. 
 
-- [ ] Implement the methods for retrieving the actors of a movie, the movies an actor plays in and the movies having a specific director in previous services 
+- [x] Implement the methods for retrieving the actors of a movie, the movies an actor plays in and the movies having a specific director in previous services 
 
 - [ ] Create REST endpoints for movies, actors and directors 
 
