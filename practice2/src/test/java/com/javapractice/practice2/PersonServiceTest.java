@@ -1,6 +1,6 @@
 package com.javapractice.practice2;
 
-import com.javapractice.practice2.model.EntityNotFoundException;
+import com.javapractice.practice2.exceptions.EntityNotFoundException;
 import com.persons.Person;
 import com.persons.PersonService;
 import org.junit.jupiter.api.Assertions;

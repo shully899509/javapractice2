@@ -1,8 +1,10 @@
 package com.javapractice.practice2.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "movies")
@@ -15,30 +17,23 @@ public class Movie {
     @ManyToOne
     private Director director;
 
-    @ManyToMany(mappedBy = "movies", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<Actor> actors = new ArrayList<>();
+    @ManyToMany(mappedBy = "movies")
+    private Set<Actor> actors = new HashSet<>();
 
-    public List<Actor> getActors() {
-        return new ArrayList<>(actors);
+    @JsonIgnore
+    public Set<Actor> getActors() {
+        return new HashSet<>(actors);
     }
 
     public void addActor(Actor actor) {
-        actor.addMovieToActor(this);
         actors.add(actor);
+        actor.getMovies().add(this);
     }
 
     public void removeActor(Actor actor) {
-        actor.removeMovieFromActor(this);
         actors.remove(actor);
+        actor.getMovies().remove(this);
     }
-
-    public void addActorToMovie(Actor actor){
-        actors.add(actor);
-    }
-    public void removeActorFromMovie(Actor actor){
-        actors.remove(actor);
-    }
-
 
     public Movie() {
     }
@@ -48,10 +43,11 @@ public class Movie {
         this.name = name;
     }
 
-    public Movie(int id, String name, Director director, List<Actor> actors) {
+    public Movie(int id, String name, Director director, Set<Actor> actors) {
         this.id = id;
         this.name = name;
         this.director = director;
+        this.actors = actors;
     }
 
     public Movie(String name) {
@@ -66,7 +62,7 @@ public class Movie {
         this.id = id;
     }
 
-    public Director getDirector(){
+    public Director getDirector() {
         return director;
     }
 

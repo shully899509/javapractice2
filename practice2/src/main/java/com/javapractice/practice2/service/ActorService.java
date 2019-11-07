@@ -1,7 +1,7 @@
 package com.javapractice.practice2.service;
 
+import com.javapractice.practice2.exceptions.EntityNotFoundException;
 import com.javapractice.practice2.model.Actor;
-import com.javapractice.practice2.model.EntityNotFoundException;
 import com.javapractice.practice2.model.Movie;
 import com.javapractice.practice2.repository.ActorRepository;
 import com.javapractice.practice2.repository.MovieRepository;
@@ -44,22 +44,56 @@ public class ActorService {
         return movieRepository.findMoviesByActorsIs(actor);
     }
 
+    public List<Movie> getMoviesByActorID(int actorId) {
+        return movieRepository.findMoviesByActorId(actorId);
+    }
+
     @Transactional
     public Actor insertActor(Actor actor) {
         return actorRepository.save(actor);
     }
 
     @Transactional
-    public void deleteActor(Actor actor) {
-        actorRepository.delete(actor);
+    public void deleteActor(int actorId) {
+        actorRepository.deleteById(actorId);
     }
 
     @Transactional
-    public Actor updateActor(Actor actor, Actor updatedActor) {
-        if (findActorById(actor.getId()).isPresent()) {
-            return actorRepository.save(new Actor(actor.getId(), updatedActor.getName(), updatedActor.getMovies()));
+    public Actor updateActor(int id, Actor updatedActor) {
+        if (actorRepository.existsById(id)) {
+            return actorRepository.save(new Actor(id, updatedActor.getName(), updatedActor.getMovies()));
         } else {
-            throw new EntityNotFoundException("Person with ID " + actor.getId() + " not found.");
+            throw new EntityNotFoundException("Actor with ID " + id + " not found.");
+        }
+    }
+
+    @Transactional
+    public void addMovieToActor(int actorId, int movieId) {
+        Optional<Actor> actor = actorRepository.findById(actorId);
+        Optional<Movie> movie = movieRepository.findById(movieId);
+        if (actor.isEmpty()) {
+            throw new EntityNotFoundException("Actor with ID " + actorId + " not found.");
+        } else if (movie.isEmpty()) {
+            throw new EntityNotFoundException("Movie with ID " + movieId + " not found.");
+        } else {
+            actor.get().addMovie(movie.get());
+            actorRepository.save(actor.get());
+            movieRepository.save(movie.get());
+        }
+    }
+
+    @Transactional
+    public void removeMovieFromActor(int actorId, int movieId) {
+        Optional<Actor> actor = actorRepository.findById(actorId);
+        Optional<Movie> movie = movieRepository.findById(movieId);
+        if (actor.isEmpty()) {
+            throw new EntityNotFoundException("Actor with ID " + actorId + " not found.");
+        } else if (movie.isEmpty()) {
+            throw new EntityNotFoundException("Movie with ID " + movieId + " not found.");
+        } else {
+            actor.get().removeMovie(movie.get());
+            actorRepository.save(actor.get());
+            movieRepository.save(movie.get());
         }
     }
 }

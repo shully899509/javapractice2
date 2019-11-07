@@ -1,7 +1,7 @@
 package com.javapractice.practice2.service;
 
+import com.javapractice.practice2.exceptions.EntityNotFoundException;
 import com.javapractice.practice2.model.Director;
-import com.javapractice.practice2.model.EntityNotFoundException;
 import com.javapractice.practice2.model.Movie;
 import com.javapractice.practice2.repository.DirectorRepository;
 import com.javapractice.practice2.repository.MovieRepository;
@@ -24,11 +24,11 @@ public class DirectorService {
         this.movieRepository = movieRepository;
     }
 
-    public List<Director> getDirectors(){
+    public List<Director> getDirectors() {
         return directorRepository.findAll();
     }
 
-    public Director getDirectorById(int id){
+    public Director getDirectorById(int id) {
         Optional<Director> director = directorRepository.findById(id);
         if (director.isPresent()) {
             return director.get();
@@ -37,30 +37,60 @@ public class DirectorService {
         }
     }
 
-    private Optional<Director> findDirectorById(int id){
+    public Optional<Director> findDirectorById(int id) {
         return directorRepository.findById(id);
     }
 
-    public List<Movie> getMoviesByDirector(Director director){
-        return movieRepository.findMoviesByDirector(director);
+    public List<Movie> getMoviesByDirectorId(int directorId) {
+        return movieRepository.findMoviesByDirector_Id(directorId);
     }
 
     @Transactional
-    public Director insertDirector(Director director){
+    public Director insertDirector(Director director) {
         return directorRepository.save(director);
     }
 
     @Transactional
-    public void deleteDirector(Director director){
-        directorRepository.delete(director);
+    public void deleteDirector(int directorId) {
+        directorRepository.deleteById(directorId);
     }
 
     @Transactional
-    public Director updateDirector(Director director, Director updatedDirector){
-        if (findDirectorById(director.getId()).isPresent()){
-            return directorRepository.save(new Director(director.getId(), updatedDirector.getName(), updatedDirector.getMovies()));
+    public Director updateDirector(int id, Director updatedDirector) {
+        if (directorRepository.existsById(id)) {
+            return directorRepository.save(new Director(id, updatedDirector.getName(), updatedDirector.getMovies()));
         } else {
-            throw new EntityNotFoundException("Person with ID " + director.getId() + " not found.");
+            throw new EntityNotFoundException("Person with ID " + id + " not found.");
+        }
+    }
+
+    @Transactional
+    public void addMovieToDirector(int directorId, int movieId) {
+        Optional<Director> director = directorRepository.findById(directorId);
+        Optional<Movie> movie = movieRepository.findById(movieId);
+        if (director.isEmpty()) {
+            throw new EntityNotFoundException("Director with ID " + directorId + " not found.");
+        } else if (movie.isEmpty()) {
+            throw new EntityNotFoundException("Movie with ID " + movieId + " not found.");
+        } else {
+            director.get().addMovie(movie.get());
+            directorRepository.save(director.get());
+            movieRepository.save(movie.get());
+        }
+    }
+
+    @Transactional
+    public void removeMovieFromDirector(int directorId, int movieId) {
+        Optional<Director> director = directorRepository.findById(directorId);
+        Optional<Movie> movie = movieRepository.findById(movieId);
+        if (director.isEmpty()) {
+            throw new EntityNotFoundException("Director with ID " + directorId + " not found.");
+        } else if (movie.isEmpty()) {
+            throw new EntityNotFoundException("Movie with ID " + movieId + " not found.");
+        } else {
+            director.get().removeMovie(movie.get());
+            directorRepository.save(director.get());
+            movieRepository.save(movie.get());
         }
     }
 }
