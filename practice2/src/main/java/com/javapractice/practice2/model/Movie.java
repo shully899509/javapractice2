@@ -6,7 +6,6 @@ import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "movies")
@@ -96,11 +95,11 @@ public class Movie {
         return Objects.hash(id, name);
     }
 
-    public static MovieBuilder builder(){
+    public static MovieBuilder builder() {
         return new MovieBuilder();
     }
 
-    public static MovieBuilder builder(Movie movie){
+    public static MovieBuilder builder(Movie movie) {
         return new MovieBuilder(movie);
     }
 

@@ -37,10 +37,18 @@ class DirectorServiceTest {
         this.movieService = movieService;
     }
 
+    private Director createDirector(Director.DirectorBuilder builder, String director12) {
+        return builder.withName(director12).build();
+    }
+
+    private Movie createMovie(String movie2) {
+        return Movie.builder().withName(movie2).build();
+    }
+
     @BeforeEach
     public void setup() {
-        director = directorService.insertDirector(Director.builder().withName("director12").build());
-        movie = movieService.insertMovie(Movie.builder().withName("movie1").build());
+        director = directorService.insertDirector(createDirector(Director.builder(), "director12"));
+        movie = movieService.insertMovie(createMovie("movie1"));
     }
 
     @Test
@@ -76,7 +84,7 @@ class DirectorServiceTest {
     @Test
     @DisplayName("Check update Director")
     void updateDirectorNameTest() {
-        director = Director.builder(director).withName("updatedDirectorName").build();
+        director = createDirector(Director.builder(director), "updatedDirectorName");
         director = directorService.updateDirector(director.getId(), director);
         assertEquals("updatedDirectorName", director.getName());
     }
@@ -84,15 +92,15 @@ class DirectorServiceTest {
     @Test
     @DisplayName("Check update Director throws exception not found")
     void updateDirectorFail() {
-        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.updateDirector(-1, Director.builder().withName("updatedDirectorFail").build()));
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.updateDirector(-1, createDirector(Director.builder(), "updatedDirectorFail")));
         assertEquals("Director with ID -1 not found.", exception.getMessage());
     }
 
     @Test
     @DisplayName("Check insert director with movies and getMoviesByDirectorId")
     void getDirectorMoviesTest() {
-        Movie movie1 = movieService.insertMovie(Movie.builder().withName("movie1").build());
-        Movie movie2 = movieService.insertMovie(Movie.builder().withName("movie2").build());
+        Movie movie1 = movieService.insertMovie(createMovie("movie1"));
+        Movie movie2 = movieService.insertMovie(createMovie("movie2"));
         directorService.addMovieToDirector(director.getId(), movie1.getId());
         directorService.addMovieToDirector(director.getId(), movie2.getId());
         Set<Movie> movies = new HashSet<>(director.getMovies());
@@ -131,7 +139,7 @@ class DirectorServiceTest {
     @Test
     @DisplayName("Check removeMovieFromDirector")
     void removeMovieFromDirectorTest() {
-        Movie movie2 = movieService.insertMovie(Movie.builder().withName("Movie2").build());
+        Movie movie2 = movieService.insertMovie(createMovie("Movie2"));
         director = directorService.addMovieToDirector(director.getId(), movie.getId());
         director = directorService.addMovieToDirector(director.getId(), movie2.getId());
         assertEquals(director.getMovies(), directorService.getMoviesByDirectorId(director.getId()));

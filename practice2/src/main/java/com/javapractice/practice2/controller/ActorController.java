@@ -52,13 +52,13 @@ public class ActorController {
 
     @GetMapping("/{id}/movies")
     public Set<Movie> getMovies(@PathVariable("id") int id) {
-        return actorService.getMoviesByActor(actorService.getActorById(id));
+        return actorService.getMoviesByActorId(id);
     }
 
     @GetMapping("/{actor-id}/movies/{movie-id}")
     public Movie getActorMovieById(@PathVariable("actor-id") int actorId, @PathVariable("movie-id") int movieId) {
         Movie movie = movieService.getMovieById(movieId);
-        if (actorService.getMoviesByActorID(actorId).contains(movie)) {
+        if (actorService.getMoviesByActorId(actorId).contains(movie)) {
             return movie;
         } else {
             throw new EntityNotFoundException("Actor " + actorId + " is not in Movie " + movieId);

@@ -38,9 +38,21 @@ class MovieServiceTest {
         this.directorService = directorService;
     }
 
+    private Actor createActor(String actorName) {
+        return Actor.builder().withName(actorName).build();
+    }
+
+    private Director createDirector(String directorName) {
+        return Director.builder().withName(directorName).build();
+    }
+
+    private Movie createMovie(Movie.MovieBuilder builder, String updatedMovie) {
+        return builder.withName(updatedMovie).build();
+    }
+
     @BeforeEach
     public void setup() {
-        Director director = directorService.insertDirector(Director.builder().withName("director1").build());
+        Director director = directorService.insertDirector(createDirector("director1"));
         movie = movieService.insertMovie(Movie.builder().withName("movie").withDirector(director).build());
         actor = actorService.insertActor(createActor("actor1"));
     }
@@ -78,7 +90,7 @@ class MovieServiceTest {
     @Test
     @DisplayName("Check update Movie")
     void updateMovieNameTest() {
-        movie = Movie.builder(movie).withName("updatedMovieName").build();
+        movie = createMovie(Movie.builder(movie), "updatedMovieName");
         movie = movieService.updateMovie(movie.getId(), movie);
         assertEquals("updatedMovieName", movie.getName());
     }
@@ -86,7 +98,7 @@ class MovieServiceTest {
     @Test
     @DisplayName("Check update Movie throws exception not found")
     void updateMovieFail() {
-        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> movieService.updateMovie(-1, Movie.builder().withName("updatedMovie").build()));
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> movieService.updateMovie(-1, createMovie(Movie.builder(), "updatedMovie")));
         assertEquals("Movie with ID -1 not found.", exception.getMessage());
     }
 
@@ -159,10 +171,6 @@ class MovieServiceTest {
         assertEquals("Movie with ID " + movie.getId() + " does not contain Actor with ID " + actor.getId(), exception.getMessage());
     }
 
-    private Actor createActor(String actor2) {
-        return Actor.builder().withName(actor2).build();
-    }
-
     @Test
     @DisplayName("Check getDirectorOfMovie")
     public void getDirectorOfMovieTest() {
@@ -172,7 +180,7 @@ class MovieServiceTest {
     @Test
     @DisplayName("Check update movie director")
     public void updateMovieDirectorTest() {
-        Director director1 = directorService.insertDirector(Director.builder().withName("directorUpdated").build());
+        Director director1 = directorService.insertDirector(createDirector("directorUpdated"));
         movie = movieService.updateMovieDirector(movie.getId(), director1.getId());
         assertEquals(movie.getDirector(), movieService.getMovieDirector(movie.getId()));
     }
@@ -180,7 +188,7 @@ class MovieServiceTest {
     @Test
     @DisplayName("Check update movie director fail no Movie")
     public void updateMovieDirectorFailNoMovie() {
-        Director director1 = directorService.insertDirector(Director.builder().withName("directorUpdated").build());
+        Director director1 = directorService.insertDirector(createDirector("directorUpdated"));
         Exception exception = Assertions.assertThrows(javax.persistence.EntityNotFoundException.class, () -> movieService.updateMovieDirector(-1, director1.getId()));
         assertEquals("Unable to find com.javapractice.practice2.model.Movie with id -1", exception.getMessage());
     }

@@ -85,11 +85,11 @@ public class Director implements Person {
         return Objects.hash(id, name);
     }
 
-    public static DirectorBuilder builder(){
+    public static DirectorBuilder builder() {
         return new DirectorBuilder();
     }
 
-    public static DirectorBuilder builder(Director director){
+    public static DirectorBuilder builder(Director director) {
         return new DirectorBuilder(director);
     }
 

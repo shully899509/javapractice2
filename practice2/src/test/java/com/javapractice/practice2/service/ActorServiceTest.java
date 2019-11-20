@@ -35,10 +35,18 @@ class ActorServiceTest {
         this.movieService = movieService;
     }
 
+    private Movie createMovie(String movie1) {
+        return Movie.builder().withName(movie1).build();
+    }
+
+    private Actor createActor(Actor.ActorBuilder builder, String actor) {
+        return builder.withName(actor).build();
+    }
+
     @BeforeEach
     public void setup() {
-        actor = actorService.insertActor(Actor.builder().withName("actor").build());
-        movie = movieService.insertMovie(Movie.builder().withName("movie1").build());
+        actor = actorService.insertActor(createActor(Actor.builder(), "actor"));
+        movie = movieService.insertMovie(createMovie("movie1"));
     }
 
     @Test
@@ -74,7 +82,7 @@ class ActorServiceTest {
     @Test
     @DisplayName("Check update Actor")
     void updateActorNameTest() {
-        actor = Actor.builder(actor).withName("updatedActorName").build();
+        actor = createActor(Actor.builder(actor), "updatedActorName");
         actor = actorService.updateActor(actor, actor.getId());
         assertEquals("updatedActorName", actor.getName());
     }
@@ -82,7 +90,7 @@ class ActorServiceTest {
     @Test
     @DisplayName("Check update Actor throws exception not found")
     void updateActorFail() {
-        Actor updatedActor = Actor.builder().withName("actorName").build();
+        Actor updatedActor = createActor(Actor.builder(), "actorName");
         Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> actorService.updateActor(updatedActor, -1));
         assertEquals("Actor with ID -1 not found.", exception.getMessage());
     }
@@ -90,17 +98,17 @@ class ActorServiceTest {
     @Test
     @DisplayName("Check getMoviesByActor")
     void getActorMoviesTest() {
-        Movie movie2 = movieService.insertMovie(Movie.builder().withName("movie2").build());
+        Movie movie2 = movieService.insertMovie(createMovie("movie2"));
         actor = actorService.addMovieToActor(actor.getId(), movie.getId());
         actor = actorService.addMovieToActor(actor.getId(), movie2.getId());
-        assertEquals(new HashSet<>(actor.getMovies()), actorService.getMoviesByActor(actor));
+        assertEquals(new HashSet<>(actor.getMovies()), actorService.getMoviesByActorId(actor.getId()));
     }
 
     @Test
     @DisplayName("Check addMovieToActor")
     void addMovieToActorTest() {
         actor = actorService.addMovieToActor(actor.getId(), movie.getId());
-        assertEquals(actor.getMovies(), actorService.getMoviesByActor(actor));
+        assertEquals(actor.getMovies(), actorService.getMoviesByActorId(actor.getId()));
     }
 
     @Test
@@ -128,11 +136,11 @@ class ActorServiceTest {
     @Test
     @DisplayName("Check removeMovieFromActor")
     void removeMovieFromActorTest() {
-        Movie movie2 = movieService.insertMovie(Movie.builder().withName("movie2").build());
+        Movie movie2 = movieService.insertMovie(createMovie("movie2"));
         actor = actorService.addMovieToActor(actor.getId(), movie.getId());
         actor = actorService.addMovieToActor(actor.getId(), movie2.getId());
         actor = actorService.removeMovieFromActor(actor.getId(), movie2.getId());
-        assertEquals(actor.getMovies(), actorService.getMoviesByActor(actor));
+        assertEquals(actor.getMovies(), actorService.getMoviesByActorId(actor.getId()));
     }
 
     @Test
