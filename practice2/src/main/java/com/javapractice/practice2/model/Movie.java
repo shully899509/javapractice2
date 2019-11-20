@@ -4,25 +4,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "movies")
 public class Movie {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
-
-    @ManyToOne
     private Director director;
-
-    @ManyToMany(mappedBy = "movies")
     private Set<Actor> actors = new HashSet<>();
 
     @JsonIgnore
+    @ManyToMany(mappedBy = "movies")
     public Set<Actor> getActors() {
-        return new HashSet<>(actors);
+        return actors;
+    }
+
+    public void setActors(Set<Actor> actors) {
+        this.actors = new HashSet<>(actors);
     }
 
     public void addActor(Actor actor) {
@@ -32,28 +33,21 @@ public class Movie {
 
     public void removeActor(Actor actor) {
         actors.remove(actor);
-        actor.getMovies().remove(this);
+        actor.getMovies().removeIf(a -> a.getId() == this.id);
     }
 
     public Movie() {
     }
 
-    public Movie(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public Movie(int id, String name, Director director, Set<Actor> actors) {
+    private Movie(int id, String name, Director director, Set<Actor> actors) {
         this.id = id;
         this.name = name;
         this.director = director;
         this.actors = actors;
     }
 
-    public Movie(String name) {
-        this.name = name;
-    }
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getId() {
         return id;
     }
@@ -62,6 +56,7 @@ public class Movie {
         this.id = id;
     }
 
+    @ManyToOne
     public Director getDirector() {
         return director;
     }
@@ -84,7 +79,69 @@ public class Movie {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", director=" + director +
-                ", actors=" + actors +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return id == movie.id &&
+                Objects.equals(name, movie.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+
+    public static MovieBuilder builder(){
+        return new MovieBuilder();
+    }
+
+    public static MovieBuilder builder(Movie movie){
+        return new MovieBuilder(movie);
+    }
+
+    public static class MovieBuilder {
+        private int id;
+        private String name;
+        private Director director;
+        private Set<Actor> actors = new HashSet<>();
+
+        private MovieBuilder() {
+        }
+
+        private MovieBuilder(Movie movie) {
+            this.id = movie.getId();
+            this.name = movie.getName();
+            this.director = movie.getDirector();
+            this.actors = new HashSet<>(movie.getActors());
+        }
+
+        public MovieBuilder withId(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public MovieBuilder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public MovieBuilder withDirector(Director director) {
+            this.director = director;
+            return this;
+        }
+
+        public MovieBuilder withMovies(Set<Actor> actors) {
+            this.actors = actors;
+            return this;
+        }
+
+        public Movie build() {
+            return new Movie(id, name, director, actors);
+        }
     }
 }

@@ -1,16 +1,22 @@
 package com.javapractice.practice2.service;
 
+import com.javapractice.practice2.exceptions.EntityNotFoundException;
 import com.javapractice.practice2.model.Director;
 import com.javapractice.practice2.model.Movie;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,6 +28,8 @@ class DirectorServiceTest {
 
     private final DirectorService directorService;
     private final MovieService movieService;
+    private Director director;
+    private Movie movie;
 
     @Autowired
     DirectorServiceTest(DirectorService directorService, MovieService movieService) {
@@ -29,32 +37,126 @@ class DirectorServiceTest {
         this.movieService = movieService;
     }
 
+    @BeforeEach
+    public void setup() {
+        director = directorService.insertDirector(Director.builder().withName("director12").build());
+        movie = movieService.insertMovie(Movie.builder().withName("movie1").build());
+    }
+
     @Test
+    @DisplayName("Check insert Director and getAll")
     void getDirectorsTest() {
-        Director panaMea = new Director("Pana Mea");
-        Director insertedDirector = directorService.insertDirector(panaMea);
-        assertEquals(1, directorService.getDirectors().size());
+        assertEquals(2, directorService.getDirectors().size());
     }
 
     @Test
-    void insertDirectorTest(){
-        Director panaMea = new Director("Pana Mea");
-        Director insertedDirector = directorService.insertDirector(panaMea);
-        assertEquals(panaMea, directorService.getDirectorById(insertedDirector.getId()));
+    @DisplayName("Check insert Director and getDirectorById")
+    void insertDirectorTest() {
+        assertEquals(director, directorService.getDirectorById(director.getId()));
     }
 
     @Test
-    void insertDirectorWithMovies(){
-        Director panaMea = new Director("Pana Mea");
-        Movie movie1 = new Movie("A");
-        Movie movie2 = new Movie("B");
-        panaMea.addMovie(movie1);
-        panaMea.addMovie(movie2);
+    @DisplayName("Check delete Director after insert")
+    void deleteDirectorTest() {
+        int directorId = director.getId();
+        directorService.deleteDirectorById(directorId);
+        Exception exception = Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> directorService.getDirectorById(directorId));
+        assertEquals("Unable to find com.javapractice.practice2.model.Director with id "
+                + directorId + "; nested exception is javax.persistence.EntityNotFoundException: Unable to find com.javapractice.practice2.model.Director with id "
+                + directorId, exception.getMessage());
+    }
 
-        Director insertedDirector = directorService.insertDirector(panaMea);
+    @Test
+    @DisplayName("Check delete Director throws exception not found")
+    void deleteDirectorFail() {
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.deleteDirectorById(-1));
+        assertEquals("Director with ID -1 not found.", exception.getMessage());
+    }
 
-        assertEquals(panaMea, directorService.getDirectorById(insertedDirector.getId()));
-        assertEquals(2, movieService.getMovies().size());
-        assertEquals(panaMea.getMovies(), directorService.getMoviesByDirector(insertedDirector));
+    @Test
+    @DisplayName("Check update Director")
+    void updateDirectorNameTest() {
+        director = Director.builder(director).withName("updatedDirectorName").build();
+        director = directorService.updateDirector(director.getId(), director);
+        assertEquals("updatedDirectorName", director.getName());
+    }
+
+    @Test
+    @DisplayName("Check update Director throws exception not found")
+    void updateDirectorFail() {
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.updateDirector(-1, Director.builder().withName("updatedDirectorFail").build()));
+        assertEquals("Director with ID -1 not found.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check insert director with movies and getMoviesByDirectorId")
+    void getDirectorMoviesTest() {
+        Movie movie1 = movieService.insertMovie(Movie.builder().withName("movie1").build());
+        Movie movie2 = movieService.insertMovie(Movie.builder().withName("movie2").build());
+        directorService.addMovieToDirector(director.getId(), movie1.getId());
+        directorService.addMovieToDirector(director.getId(), movie2.getId());
+        Set<Movie> movies = new HashSet<>(director.getMovies());
+        assertEquals(movies, directorService.getMoviesByDirectorId(director.getId()));
+    }
+
+    @Test
+    @DisplayName("Check addMovieToDirector")
+    void addMovieToDirectorTest() {
+        director = directorService.addMovieToDirector(director.getId(), movie.getId());
+        assertEquals(director.getMovies(), directorService.getMoviesByDirectorId(director.getId()));
+    }
+
+    @Test
+    @DisplayName("Check addMovieToDirector fail no Movie")
+    void addMovieToDirectorFailNoMovie() {
+        Exception exception = Assertions.assertThrows(javax.persistence.EntityNotFoundException.class, () -> directorService.addMovieToDirector(director.getId(), -1));
+        assertEquals("Unable to find com.javapractice.practice2.model.Movie with id -1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check addMovieToDirector fail no Director")
+    void addMovieToDirectorFailNoDirector() {
+        Exception exception = Assertions.assertThrows(javax.persistence.EntityNotFoundException.class, () -> directorService.addMovieToDirector(-1, movie.getId()));
+        assertEquals("Unable to find com.javapractice.practice2.model.Director with id -1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check addMovieToDirector fail is linked")
+    void addMovieToDirectorFailIsLinked() {
+        director = directorService.addMovieToDirector(director.getId(), movie.getId());
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.addMovieToDirector(director.getId(), movie.getId()));
+        assertEquals("Director with ID " + director.getId() + " already contains Movie with ID " + movie.getId(), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check removeMovieFromDirector")
+    void removeMovieFromDirectorTest() {
+        Movie movie2 = movieService.insertMovie(Movie.builder().withName("Movie2").build());
+        director = directorService.addMovieToDirector(director.getId(), movie.getId());
+        director = directorService.addMovieToDirector(director.getId(), movie2.getId());
+        assertEquals(director.getMovies(), directorService.getMoviesByDirectorId(director.getId()));
+        director = directorService.removeMovieFromDirector(director.getId(), movie2.getId());
+        assertEquals(director.getMovies(), directorService.getMoviesByDirectorId(director.getId()));
+    }
+
+    @Test
+    @DisplayName("Check removeMovieFromDirector fail no Movie")
+    void removeMovieFromDirectorFailNoMovie() {
+        Exception exception = Assertions.assertThrows(javax.persistence.EntityNotFoundException.class, () -> directorService.removeMovieFromDirector(director.getId(), -1));
+        assertEquals("Unable to find com.javapractice.practice2.model.Movie with id -1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check removeMovieFromDirector fail no Director")
+    void removeMovieFromDirectorFailNoDirector() {
+        Exception exception = Assertions.assertThrows(javax.persistence.EntityNotFoundException.class, () -> directorService.removeMovieFromDirector(-1, movie.getId()));
+        assertEquals("Unable to find com.javapractice.practice2.model.Director with id -1", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Check removeMovieFromDirector no link")
+    void removeMovieFromDirectorFailNoLink() {
+        Exception exception = Assertions.assertThrows(EntityNotFoundException.class, () -> directorService.removeMovieFromDirector(director.getId(), movie.getId()));
+        assertEquals("Director with ID " + director.getId() + " does not contain Movie with ID " + movie.getId(), exception.getMessage());
     }
 }

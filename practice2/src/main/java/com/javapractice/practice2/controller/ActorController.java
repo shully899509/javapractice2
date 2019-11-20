@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Api("Actors API")
 @RestController
@@ -31,7 +32,7 @@ public class ActorController {
 
     @GetMapping("/{id}")
     public Actor getById(@PathVariable("id") int id) {
-        return actorService.findActorById(id).orElse(null);
+        return actorService.getActorById(id);
     }
 
     @PostMapping
@@ -41,21 +42,21 @@ public class ActorController {
 
     @PatchMapping("/{id}")
     public Actor update(@PathVariable("id") int id, @RequestBody Actor actor) {
-        return actorService.updateActor(id, actor);
+        return actorService.updateActor(actor, id);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") int id) {
-        actorService.deleteActor(id);
+        actorService.deleteActorById(id);
     }
 
     @GetMapping("/{id}/movies")
-    public List<Movie> getMovies(@PathVariable("id") int id) {
+    public Set<Movie> getMovies(@PathVariable("id") int id) {
         return actorService.getMoviesByActor(actorService.getActorById(id));
     }
 
-    @GetMapping("/{actorId}/movies/{movieId}")
-    public Movie getActorMovieById(@PathVariable("actorId") int actorId, @PathVariable("movieId") int movieId) {
+    @GetMapping("/{actor-id}/movies/{movie-id}")
+    public Movie getActorMovieById(@PathVariable("actor-id") int actorId, @PathVariable("movie-id") int movieId) {
         Movie movie = movieService.getMovieById(movieId);
         if (actorService.getMoviesByActorID(actorId).contains(movie)) {
             return movie;
@@ -64,13 +65,13 @@ public class ActorController {
         }
     }
 
-    @PatchMapping("/{actorId}/movies/{movieId}")
-    public void addMovieToActor(@PathVariable("actorId") int actordId, @PathVariable("movieId") int movieId) {
+    @PatchMapping("/{actor-id}/movies/{movie-id}")
+    public void addMovieToActor(@PathVariable("actor-id") int actordId, @PathVariable("movie-id") int movieId) {
         actorService.addMovieToActor(actordId, movieId);
     }
 
-    @DeleteMapping("/{actorId}/movies/{movieId}")
-    public void removeMovieFromActor(@PathVariable("actorId") int actordId, @PathVariable("movieId") int movieId) {
+    @DeleteMapping("/{actor-id}/movies/{movie-id}")
+    public void removeMovieFromActor(@PathVariable("actor-id") int actordId, @PathVariable("movie-id") int movieId) {
         actorService.removeMovieFromActor(actordId, movieId);
     }
 }

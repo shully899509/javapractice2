@@ -1,20 +1,10 @@
 package com.javapractice.practice2;
 
-import com.javapractice.practice2.exceptions.EntityNotFoundException;
-import com.persons.Person;
-import com.persons.PersonService;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@Retention(RetentionPolicy.RUNTIME)
 //@Target(ElementType.TYPE)
@@ -23,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class PersonServiceTest {
-    private final PersonService personService;
+    /*private final PersonService personService;
 
     @Autowired
     public PersonServiceTest(PersonService personService) {
@@ -76,5 +66,5 @@ public class PersonServiceTest {
 
         assertEquals(updatedPerson.getName(), personService.getPersonById(insertedPerson.getId()).getName());
     }
-
+*/
 }
